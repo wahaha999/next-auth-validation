@@ -2,52 +2,22 @@
 import Link from "next/link";
 import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Input } from "@/app/components/Input/input";
+import { Input } from "@/app/components/input/input";
 import { Button } from "@mui/material";
 import axios from "axios";
-import { User } from "@/app/types/user";
 import { useForm } from 'react-hook-form';
-import * as yup from 'yup';
 import { yupResolver } from "@hookform/resolvers/yup";
 import { Snackbar } from "@mui/material";
-import MuiAlert, { AlertProps } from '@mui/material/Alert';
-
-const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
-    props,
-    ref,
-) {
-    return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
-});
-
-interface FormValues {
-    email: string,
-    username: string,
-    password: string,
-    password_confirm: string
-}
-
-
-// yup schema
-const schema = yup.object().shape({
-    username: yup.string().required("Username is required."),
-    email: yup.string().email("Email must be a valid email").required("Email is required."),
-    password: yup.string()
-        .required("Password is required.")
-        .min(8, 'At least 8 chars')
-        .matches(/[a-z]/, 'At least one lowercase char')
-        .matches(/[A-Z]/, 'At least one uppercase char')
-        .matches(/[a-zA-Z]+[^a-zA-Z\s]+/, 'At least 1 number or special char (@,!,#, etc).'),
-    password_confirm: yup.string()
-        .required('Password confirmation is required')
-        .oneOf([yup.ref('password')], 'Passwords must match')
-})
+import { RegisterFormValues } from "@/app/types/user";
+import Alert from "@/app/components/alert";
+import registerSchema from "./schema";
 
 export default function SignupPage() {
     const router = useRouter();
     const [buttonDisabled, setButtonDisabled] = React.useState(false);
     const [loading, setLoading] = React.useState(false);
     const [openAlert, setOpenAlert] = React.useState(false);
-    const { register, watch, handleSubmit, formState: { errors }, reset } = useForm<FormValues>({ resolver: yupResolver(schema) });
+    const { register, watch, handleSubmit, formState: { errors }, reset } = useForm<RegisterFormValues>({ resolver: yupResolver(registerSchema) });
 
     const onSubmit = async () => {
         try {

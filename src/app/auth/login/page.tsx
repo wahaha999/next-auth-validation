@@ -5,53 +5,30 @@ import { useRouter } from "next/navigation";
 import { Button } from "@mui/material";
 import { useAuth } from "@/context/AuthContext";
 import axios from "axios";
-import { User } from "@/app/types/user";
-import { Input } from "@/app/components/Input/input";
+import { UserData } from "@/app/types/user";
+import { Input } from "@/app/components/input/input";
 import { useForm } from 'react-hook-form';
-import * as yup from 'yup';
 import { yupResolver } from "@hookform/resolvers/yup";
 import {Snackbar} from "@mui/material";
-import MuiAlert, { AlertProps } from '@mui/material/Alert';
-
-const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
-  props,
-  ref,
-) {
-  return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
-});
-
-interface FormValues {
-  email: string,
-  password: string
-}
-
-// yup schema
-const schema = yup.object().shape({
-  email: yup.string().email("Email must be a valid email").required("Email is required."),
-  password: yup.string()
-    .required("Password is required.")
-    .min(8, 'At least 8 chars')
-    .matches(/[a-z]/, 'At least one lowercase char')
-    .matches(/[A-Z]/, 'At least one uppercase char')
-    .matches(/[a-zA-Z]+[^a-zA-Z\s]+/, 'At least 1 number or special char (@,!,#, etc).')
-})
-
+import { LoginFormValues } from "@/app/types/user";
+import Alert from "@/app/components/alert";
+import loginSchema from "./schema";
 
 export default function LoginPage() {
   const router = useRouter();
   const [openAlert, setOpenAlert] = React.useState(false);
-  const { register, watch, handleSubmit, formState: { errors }, reset } = useForm<FormValues>({ resolver: yupResolver(schema) });
+  const { register, watch, handleSubmit, formState: { errors }, reset } = useForm<LoginFormValues>({ resolver: yupResolver(loginSchema) });
   const [buttonDisabled, setButtonDisabled] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
   const { loginUser } = useAuth();
 
-  const onSubmit = async (data: FormValues) => {
+  const onSubmit = async (data: LoginFormValues) => {
     try {
       setLoading(true);
       console.log(data);
 
       const respond: any = await axios.get(`http://localhost:4000/users?email=${encodeURIComponent(watch('email'))}&password=${encodeURIComponent(watch('password'))}`)
-      const user: User[] = respond.data;
+      const user: UserData[] = respond.data;
       if (user.length > 0) {
         loginUser();
         router.push("/dashboard");

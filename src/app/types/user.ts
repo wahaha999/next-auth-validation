@@ -1,6 +1,18 @@
-export interface User {
-    id: string,
-    name: string,
+export interface UserData {
+  id: string;
+  name: string;
+  email: string;
+  password?: string;
+}
+
+export interface LoginFormValues {
+  email: string;
+  password: string;
+}
+
+export interface RegisterFormValues {
     email: string,
-    password?: string
+    username: string,
+    password: string,
+    password_confirm: string
 }
