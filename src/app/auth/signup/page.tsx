@@ -2,57 +2,83 @@
 import Link from "next/link";
 import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { toast } from "react-hot-toast";
 import { Input } from "@/app/components/Input/input";
 import { Button } from "@mui/material";
 import axios from "axios";
 import { User } from "@/app/types/user";
+import { useForm } from 'react-hook-form';
+import * as yup from 'yup';
+import { yupResolver } from "@hookform/resolvers/yup";
+import { Snackbar } from "@mui/material";
+import MuiAlert, { AlertProps } from '@mui/material/Alert';
+
+const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
+    props,
+    ref,
+) {
+    return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+});
+
+interface FormValues {
+    email: string,
+    username: string,
+    password: string,
+    password_confirm: string
+}
+
+
+// yup schema
+const schema = yup.object().shape({
+    username: yup.string().required("Username is required."),
+    email: yup.string().email("Email must be a valid email").required("Email is required."),
+    password: yup.string()
+        .required("Password is required.")
+        .min(8, 'At least 8 chars')
+        .matches(/[a-z]/, 'At least one lowercase char')
+        .matches(/[A-Z]/, 'At least one uppercase char')
+        .matches(/[a-zA-Z]+[^a-zA-Z\s]+/, 'At least 1 number or special char (@,!,#, etc).'),
+    password_confirm: yup.string()
+        .required('Password confirmation is required')
+        .oneOf([yup.ref('password')], 'Passwords must match')
+})
 
 export default function SignupPage() {
     const router = useRouter();
-    const [userInfo, setUserInfo] = React.useState({
-        email: "",
-        username: "",
-        password: "",
-        password_confirm: ""
-    });
     const [buttonDisabled, setButtonDisabled] = React.useState(false);
     const [loading, setLoading] = React.useState(false);
-    const inputRef = React.useRef<HTMLInputElement>(null);
+    const [openAlert, setOpenAlert] = React.useState(false);
+    const { register, watch, handleSubmit, formState: { errors }, reset } = useForm<FormValues>({ resolver: yupResolver(schema) });
 
-    useEffect(() => {
-      if(inputRef.current) {
-        inputRef.current.focus();
-      }
-    }, [])
-
-    const handleClick = async () => {
+    const onSubmit = async () => {
         try {
             setLoading(true);
-            const respond: any = await axios.post("http://localhost:4000/users", {
-                email: userInfo.email,
-                password: userInfo.password,
-                username: userInfo.username
+            const response: any = await axios.post("http://localhost:4000/users", {
+                email: watch('email'),
+                password: watch('password'),
+                username: watch('username')
             })
-            const user: User[] = respond.data;
-            if (userInfo.password === userInfo.password_confirm) {
-                toast.success("Signup Success");
+            if (response.status === 201) {
                 router.push("/dashboard");
+                return;
+            } else {
+                setOpenAlert(true);
             }
         } catch (e) {
-            toast.error("Signup Failed");
+            console.log(e)
+            setOpenAlert(true);
         } finally {
             setLoading(false);
+            reset();
         }
     }
 
-    useEffect(() => {
-        if (userInfo.username.length > 0 && userInfo.email.length > 0 && userInfo.password.length > 0 && userInfo.password === userInfo.password_confirm) {
-            setButtonDisabled(false);
-        } else {
-            setButtonDisabled(true);
+    const handleClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
+        if (reason === 'clickaway') {
+            return;
         }
-    }, [userInfo])
+
+        setOpenAlert(false);
+    };
 
     return (
         <div className="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
@@ -64,30 +90,29 @@ export default function SignupPage() {
                     <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white text-center">
                         Sign up new account
                     </h1>
-                    <form className="space-y-4 md:space-y-6 flex flex-col items-center justify-center" action="#">
+                    <form className="space-y-4 md:space-y-6 flex flex-col items-center justify-center" onSubmit={handleSubmit(onSubmit)}>
                         <Input
-                            ref={inputRef}
                             id="username"
                             type="text"
-                            value={userInfo.username}
-                            onChange={e => setUserInfo({ ...userInfo, username: e.target.value })}
+                            {...register('username')}
                             label="User Name"
+                            error={errors.username?.message}
                             required
                         />
                         <Input
                             id="email"
                             type="text"
-                            value={userInfo.email}
-                            onChange={e => setUserInfo({ ...userInfo, email: e.target.value })}
+                            {...register('email')}
                             label="Email"
+                            error={errors.email?.message}
                             required
                         />
 
                         <Input
                             id="password"
                             type="password"
-                            value={userInfo.password}
-                            onChange={e => setUserInfo({ ...userInfo, password: e.target.value })}
+                            {...register('password')}
+                            error={errors.password?.message}
                             label="Password"
                             required
                         />
@@ -95,14 +120,14 @@ export default function SignupPage() {
                         <Input
                             id="password-confirm"
                             type="password"
-                            value={userInfo.password_confirm}
-                            onChange={e => setUserInfo({ ...userInfo, password_confirm: e.target.value })}
+                            {...register('password_confirm')}
+                            error={errors.password_confirm?.message}
                             label="Confirm Password"
                             required
                         />
 
                         <Button
-                            onClick={handleClick}
+                            type="submit"
                             disabled={buttonDisabled}
                             disableRipple
                         >
@@ -110,9 +135,14 @@ export default function SignupPage() {
                         </Button>
 
                         <p className="text-sm font-light text-gray-500 dark:text-gray-400">
-                            Don’t have an account yet? <Link href="/auth/login" className="font-medium text-primary-600 hover:underline dark:text-primary-500">Visit Login page</Link>
+                            Have already an account? <Link href="/auth/login" className="font-medium text-primary-600 hover:underline dark:text-primary-500">Visit Login page</Link>
                         </p>
                     </form>
+                    <Snackbar open={openAlert} autoHideDuration={6000} onClose={handleClose}>
+                        <Alert onClose={handleClose} severity="warning" sx={{ width: '100%' }}>
+                            SignUp Failed.
+                        </Alert>
+                    </Snackbar>
                 </div>
             </div>
         </div>

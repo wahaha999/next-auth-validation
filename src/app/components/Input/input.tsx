@@ -8,7 +8,7 @@ interface InputProps {
   value?: string | number
   name?: string
   placeholder?: string
-  error?: boolean
+  error?: string | undefined;
   disabled?: boolean
   required?: boolean
   autoFocus?: boolean
@@ -20,6 +20,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>((props, ref)
     <div className="input-container">
       <input ref={ref} {...props} />
       {props.label && <label htmlFor={props.id}>{props.label}</label>}
+      {props.error && <p className='text-sm text-red-500'>{props.error}</p>}
     </div>
   );
 });
