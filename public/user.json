@@ -1,0 +1,28 @@
+{
+  "users": [
+    {
+      "id": "1",
+      "name": "Joseph",
+      "email": "joseph.horne1003@gmail.com",
+      "password": "scamp1015"
+    },
+    {
+      "id": "2",
+      "name": "James",
+      "email": "james.franzo1230@gmail.com",
+      "password": "Wahaha123!@#"
+    },
+    {
+      "id": "3",
+      "name": "John",
+      "email": "john.loveall@gmail.com",
+      "password": "Wahaha123!@#"
+    },
+    {
+      "id": "4",
+      "name": "Jonathan",
+      "email": "jonathan@gmail.com",
+      "password": "Wahaha123!@#"
+    }
+  ]
+}
