@@ -1,15 +1,15 @@
 "use client";
 import Link from "next/link";
-import React, { useEffect } from "react";
+import React from "react";
 import { useRouter } from "next/navigation";
-import { Input } from "@/app/components/input/input";
+import { Input } from "@/components/input/input";
 import { Button } from "@mui/material";
 import axios from "axios";
 import { useForm } from 'react-hook-form';
 import { yupResolver } from "@hookform/resolvers/yup";
 import { Snackbar } from "@mui/material";
-import { RegisterFormValues } from "@/app/types/user";
-import Alert from "@/app/components/alert";
+import { RegisterFormValues } from "@/types/user";
+import Alert from "@/components/alert";
 import registerSchema from "./schema";
 
 export default function SignupPage() {
@@ -105,7 +105,7 @@ export default function SignupPage() {
                         </Button>
 
                         <p className="text-sm font-light text-gray-500 dark:text-gray-400">
-                            Have already an account? <Link href="/auth/login" className="font-medium text-primary-600 hover:underline dark:text-primary-500">Visit Login page</Link>
+                            Have already an account? <Link href="/login" className="font-medium text-primary-600 hover:underline dark:text-primary-500">Visit Login page</Link>
                         </p>
                     </form>
                     <Snackbar open={openAlert} autoHideDuration={6000} onClose={handleClose}>

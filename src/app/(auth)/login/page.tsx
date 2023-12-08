@@ -5,14 +5,16 @@ import { useRouter } from "next/navigation";
 import { Button } from "@mui/material";
 import { useAuth } from "@/context/AuthContext";
 import axios from "axios";
-import { UserData } from "@/app/types/user";
-import { Input } from "@/app/components/input/input";
+import { UserData } from "@/types/user";
+import { Input } from "@/components/input/input";
 import { useForm } from 'react-hook-form';
 import { yupResolver } from "@hookform/resolvers/yup";
 import {Snackbar} from "@mui/material";
-import { LoginFormValues } from "@/app/types/user";
-import Alert from "@/app/components/alert";
+import { LoginFormValues } from "@/types/user";
+import Alert from "@/components/alert";
 import loginSchema from "./schema";
+import { useAppDispatch } from "@/redux/hooks";
+import { resetUser, setUser } from "@/features/user";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -21,26 +23,29 @@ export default function LoginPage() {
   const [buttonDisabled, setButtonDisabled] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
   const { loginUser } = useAuth();
+  const dispatch = useAppDispatch();
 
   const onSubmit = async (data: LoginFormValues) => {
     try {
       setLoading(true);
-      console.log(data);
 
       const respond: any = await axios.get(`http://localhost:4000/users?email=${encodeURIComponent(watch('email'))}&password=${encodeURIComponent(watch('password'))}`)
       const user: UserData[] = respond.data;
       if (user.length > 0) {
         loginUser();
+        dispatch(setUser(user[0]));
         router.push("/dashboard");
         return;
       } else {
         reset();
+        dispatch(resetUser());
+        setOpenAlert(true);
       }
     } catch (e) {
       console.log(e);
+      setOpenAlert(true);
     } finally {
       setLoading(false);
-      setOpenAlert(true);
     }
   }
 
@@ -91,7 +96,7 @@ export default function LoginPage() {
               Login here!
             </Button>
             <p className="text-sm font-light text-gray-500 dark:text-gray-400">
-              Don’t have an account yet? <Link href="/auth/signup" className="font-medium text-primary-600 hover:underline dark:text-primary-500">Sign up</Link>
+              Don’t have an account yet? <Link href="/signup" className="font-medium text-primary-600 hover:underline dark:text-primary-500">Sign up</Link>
             </p>
           </form>
           <Snackbar open={openAlert} autoHideDuration={6000} onClose={handleClose}>

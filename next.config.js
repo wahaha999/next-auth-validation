@@ -3,7 +3,7 @@ const nextConfig = {
     redirects: () => {
         return [{
             source: "/",
-            destination: "/auth/login",
+            destination: "/login",
             permanent: true
         }];
     }

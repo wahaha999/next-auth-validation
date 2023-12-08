@@ -19,7 +19,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({
   const [isAuthenticated, setAuthenticated] = useState(false);
 
   const loginUser = () => {
-    console.log("login User!!!!");
     setAuthenticated(true);
   };
 
